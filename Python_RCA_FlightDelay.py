@@ -1,9 +1,29 @@
 # DATA WRANGLING
 
 # Import Packages
+import sys
 import dowhy
 import pandas as pd
 import numpy as np
+import networkx as nx
+
+# Fix: Get Pandas 2.0+ positional indexing bug in DoWhy
+_orig_getitem = pd.Series.__getitem__
+def _patched_getitem(self, key):
+    try:
+        return _orig_getitem(self, key)
+    except KeyError:
+        if isinstance(key, int):
+            return self.iloc[key]
+        raise
+pd.Series.__getitem__ = _patched_getitem
+
+# Fix 2: NetworkX compatibility patch
+try:
+    import networkx.algorithms.d_separation as ds_mod
+    sys.modules['networkx.algorithms'].d_separated = ds_mod.is_d_separator
+except (ImportError, AttributeError):
+    pass
 
 # Set Parameters
 pd.set_option("display.precision",3)
@@ -15,6 +35,9 @@ ds = pd.read_csv('Airline_Delay_Cause.csv')
 
 # Initial Data Exploration
 print(ds.head())
+
+# Organise Data
+ds = ds.dropna()
 
 # ROOT CAUSE ANALYSIS
 
@@ -45,17 +68,6 @@ causal_graph = """digraph {
     weather_delay -> nas_delay;
 }"""
 
-import sys
-import networkx as nx
-
-# Fix the breaking change where DoWhy looks for the old function path
-try:
-    import networkx.algorithms.d_separation as ds_mod
-    # Inject it directly into the expected module namespace
-    sys.modules['networkx.algorithms'].d_separated = ds_mod.is_d_separator
-except (ImportError, AttributeError):
-    pass
-
 # Create model object
 from dowhy import CausalModel
 
@@ -71,3 +83,17 @@ model = CausalModel(
 
 identified_estimand = model.identify_effect(proceed_when_unidentifiable=True) # Estimate desired quantity
 print(identified_estimand) # Explore proposed methods
+
+# EFFECT ESTIMATION
+method = "backdoor.linear_regression"  # Use backdoor regression identified in causal model
+desired_effect = "ate"  # Use average treatment effect to measure overall impact of change/variable across entire dataset
+
+estimate = model.estimate_effect(
+    identified_estimand,
+    method_name = method,
+    target_units = desired_effect,
+    method_params = {"weighting_scheme":"ips_weight"}
+)
+
+print("Causal Estimate is " + str(estimate.value))
+
