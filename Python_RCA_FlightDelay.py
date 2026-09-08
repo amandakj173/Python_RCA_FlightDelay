@@ -15,3 +15,11 @@ ds = pd.read_csv('Airline_Delay_Cause.csv')
 
 # Initial Data Exploration
 print(ds.head())
+
+# ROOT CAUSE ANALYSIS
+
+delay_min_col = ["carrier_delay", "weather_delay", "nas_delay", "security_delay", "late_aircraft_delay"]
+total_delay_min = ds[delay_min_col].sum()
+
+print("Delay type with most minutes:")
+print(total_delay_min.sort_values(ascending=False))
