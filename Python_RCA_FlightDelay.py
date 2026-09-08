@@ -97,3 +97,12 @@ estimate = model.estimate_effect(
 
 print("Causal Estimate is " + str(estimate.value))
 
+# REFUTATION
+refute_placebo_delay = model.refute_estimate(
+    identified_estimand,
+    estimate,
+    method_name = "placebo_treatment_refuter",
+    placebo_type = "permute"
+)
+
+print(refute_placebo_delay)
