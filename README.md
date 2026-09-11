@@ -29,3 +29,6 @@ Test type: Placebo Treatment Refutation
 New estimate: .0009 (_p_>.84)
 
 Replacing the true treatment variable with a randomly generated placebo dropped the estimated causal effect. The high _p_-value confirms that the placebo effect is statistically indistinguishable from zero, proving the causal model is robust and that the primary estimate reflects a true causal relationship rather than random noise or modelling artefacts.
+
+## Next Steps
+1. Advance causal estimates using random and causal forests to capture non-linear interactions between variables and identify specific sub-conditions where incoming aircraft delays are exacerbated.
